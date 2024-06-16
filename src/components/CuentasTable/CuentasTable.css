@@ -1,0 +1,23 @@
+.table-container {
+    max-height:70vh; /* Puedes ajustar esta altura según tus necesidades */
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  .table-container table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .table-container th, .table-container td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #dee2e6; /* Bordes para las celdas */
+  }
+  .table-container .btn {
+    margin-right: 8px; /* Espacio entre los botones */
+  }
+  .options-column {
+    white-space: nowrap;
+    width: 1%;
+  }
