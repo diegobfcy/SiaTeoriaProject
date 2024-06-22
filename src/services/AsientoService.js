@@ -42,3 +42,12 @@ export const deleteAsiento = async (id) => {
     throw error;
   }
 };
+export const getAsientosDetallesData = async (id) => {
+  try {
+    const response = await axios.get(`${API_URL}/asientos/detalles/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};

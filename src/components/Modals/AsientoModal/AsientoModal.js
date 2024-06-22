@@ -104,6 +104,7 @@ const AsientoModal = ({ show, handleClose, handleGuardarAsiento }) => {
         debe: detalle.debe === "" ? "0" : detalle.debe,
         haber: detalle.haber === "" ? "0" : detalle.haber,
       })),
+      total: sumaDebe,
     };
     console.log(nuevoAsiento);
     handleGuardarAsiento(nuevoAsiento);
