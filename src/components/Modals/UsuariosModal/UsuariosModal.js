@@ -1,45 +1,35 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
-import { UserContext } from '../../../context/UserContext';
+// UsuariosModal.js
 
-const SubdiariosModal = ({ show, handleClose, handleGuardarSubdiario, subdiario }) => {
-  const [nombre, setNombre] = useState('');
-  const [descripcion, setDescripcion] = useState('');
-  const { user } = useContext(UserContext);
-  const [estado, setEstado] = useState(1); // Estado por defecto es 1
+import React, { useState, useEffect } from 'react';
+import { Modal, Button, Form } from 'react-bootstrap';
+
+const UsuariosModal = ({ show, handleClose, handleGuardarUsuario, usuario }) => {
+  const [nombre, setNombre] = useState(usuario ? usuario.nombre : '');
+  const [contrasena, setContrasena] = useState(usuario ? usuario.contrasena : '');
 
   useEffect(() => {
-    if (subdiario) {
-      setNombre(subdiario.nombre);
-      setDescripcion(subdiario.descripcion);
-      setEstado(subdiario.estado); // Establecer el estado actual del subdiario en el estado local
+    if (usuario) {
+      setNombre(usuario.nombre);
+      setContrasena(usuario.contrasena);
     } else {
       setNombre('');
-      setDescripcion('');
-      setEstado(1); // Por defecto, nuevo subdiario comienza activo
+      setContrasena('');
     }
-  }, [subdiario]);
+  }, [usuario]);
 
-  const handleGuardar = () => {
-    const fechaHoraActual = new Date().toISOString().slice(0, 19).replace('T', ' '); // Obtener fecha y hora actual en formato ISO 8601
-    const nuevoSubdiario = {
-      nombre,
-      fecha_creacion: fechaHoraActual,
-      descripcion,
-      id_usuario: user.id,
-      estado
-    };
-    handleGuardarSubdiario(nuevoSubdiario);
-    handleClose(); // Cierra el modal después de guardar
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const nuevoUsuario = { nombre, contrasena };
+    handleGuardarUsuario(nuevoUsuario);
   };
 
   return (
     <Modal show={show} onHide={handleClose}>
       <Modal.Header closeButton>
-        <Modal.Title>{subdiario ? 'Editar Subdiario' : 'Agregar Subdiario'}</Modal.Title>
+        <Modal.Title>{usuario ? 'Editar Usuario' : 'Agregar Usuario'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Form>
+        <Form onSubmit={handleSubmit}>
           <Form.Group controlId="nombre">
             <Form.Label>Nombre</Form.Label>
             <Form.Control
@@ -48,40 +38,24 @@ const SubdiariosModal = ({ show, handleClose, handleGuardarSubdiario, subdiario 
               onChange={(e) => setNombre(e.target.value)}
             />
           </Form.Group>
-          <Form.Group controlId="descripcion">
-            <Form.Label>Descripción</Form.Label>
+          <Form.Group controlId="contrasena">
+            <Form.Label>Contraseña</Form.Label>
             <Form.Control
-              as="textarea"
-              rows={3}
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
+              type="password"
+              value={contrasena}
+              onChange={(e) => setContrasena(e.target.value)}
             />
           </Form.Group>
-          {subdiario && ( // Solo muestra el campo de selección de estado si es un subdiario existente (es decir, al editarlo)
-            <Form.Group controlId="estado">
-              <Form.Label>Estado</Form.Label>
-              <Form.Control
-                as="select"
-                value={estado}
-                onChange={(e) => setEstado(parseInt(e.target.value))}
-              >
-                <option value={1}>Activo</option>
-                <option value={0}>Inactivo</option>
-              </Form.Control>
-            </Form.Group>
-          )}
+          <Button variant="secondary" onClick={handleClose}>
+            Cancelar
+          </Button>
+          <Button variant="primary" type="submit">
+            {usuario ? 'Actualizar' : 'Agregar'}
+          </Button>
         </Form>
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
-          Cancelar
-        </Button>
-        <Button variant="primary" onClick={handleGuardar}>
-          {subdiario ? 'Guardar Cambios' : 'Agregar'}
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 };
 
-export default SubdiariosModal;
+export default UsuariosModal;
