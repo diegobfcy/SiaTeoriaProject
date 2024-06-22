@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { createAsiento, getAsientos } from "../../services/AsientoService"; // Ajusta la ruta según tu estructura de archivos
-import { Table, Button } from "react-bootstrap";
+import {
+  createAsiento,
+  deleteAsiento,
+  getAsientos,
+} from "../../services/AsientoService"; // Ajusta la ruta según tu estructura de archivos
+import { Table, Button, Modal } from "react-bootstrap";
 import { FaEdit, FaTrash } from "react-icons/fa"; // Importa los iconos
 import AsientoModal from "../Modals/AsientoModal/AsientoModal";
 import "./LibroDiarioTable.css"; // Asegúrate de crear e importar este archivo de estilos
@@ -9,10 +13,10 @@ const LibroDiarioTable = () => {
   const [asientos, setAsientos] = useState([]);
   const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
   const [asientoEditar, setAsientoEditar] = useState(null); // Estado para almacenar el asiento que se está editando
+  const [showConfirmModal, setShowConfirmModal] = useState(false); // Estado para controlar la visibilidad del modal de confirmación
+  const [asientoEliminar, setAsientoEliminar] = useState(null);
 
   useEffect(() => {
-
-
     fetchAsientosData(); // Llama a la función para obtener los asientos al cargar el componente
   }, []); // Ejecuta el efecto solo una vez al renderizar inicialmente
   const fetchAsientosData = async () => {
@@ -39,16 +43,25 @@ const LibroDiarioTable = () => {
     }
   };
 
-  const handleDeleteAsiento = async (id) => {
-    // Función para manejar la eliminación de un asiento contable
+  const handleDeleteAsiento = (asiento) => {
+    setAsientoEliminar(asiento); // Almacena el asiento que se va a eliminar
+    setShowConfirmModal(true); // Muestra el modal de confirmación
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      // Llama a la función de eliminación del servicio aquí (deleteAsiento(id))
-      // Actualiza el estado de asientos después de la eliminación
-      const asientosFiltrados = asientos.filter((a) => a.id !== id);
-      setAsientos(asientosFiltrados);
+        console.log(asientoEliminar);
+      await deleteAsiento(asientoEliminar.id_asiento);
+      setShowConfirmModal(false); // Cierra el modal de confirmación
+      fetchAsientosData(); // Actualiza la lista de asientos
     } catch (error) {
       console.error("Error deleting asiento:", error);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setShowConfirmModal(false); // Cierra el modal de confirmación
+    setAsientoEliminar(null); // Reinicia el asiento a eliminar
   };
 
   const handleCloseModal = () => {
@@ -109,7 +122,7 @@ const LibroDiarioTable = () => {
                   </Button>
                   <Button
                     variant="danger"
-                    onClick={() => handleDeleteAsiento(asiento.id)}
+                    onClick={() => handleDeleteAsiento(asiento)}
                   >
                     <FaTrash />
                   </Button>
@@ -125,6 +138,27 @@ const LibroDiarioTable = () => {
         asiento={asientoEditar}
         handleGuardarAsiento={handleGuardarAsiento}
       />
+      <Modal show={showConfirmModal} onHide={handleCancelDelete}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirmar eliminación</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {asientoEliminar && (
+            <p>
+              Si elimina el detalle se eliminará todo el asiento "
+              {asientoEliminar.descripcion_asiento}". ¿Está seguro?
+            </p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCancelDelete}>
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={handleConfirmDelete}>
+            Confirmar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

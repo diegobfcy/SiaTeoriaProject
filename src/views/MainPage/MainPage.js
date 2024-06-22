@@ -18,8 +18,8 @@ const MainPage = () => {
     <div className="main-page">
       <header className="main-header">
         <div className="logo-section">
-          <img src="ruta/al/logo.png" alt="Logo" className="logo" />
-          <span className="app-name">Las Malcriadas</span>
+          
+          <span className="app-name">Asiento Contable</span>
         </div>
         <nav className="main-menu">
           <button

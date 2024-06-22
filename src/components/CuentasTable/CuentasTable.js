@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { getCuentas, createCuenta, updateCuenta, deleteCuenta } from "../../services/CuentasService"; // Ajusta la ruta según tu estructura de archivos
+import { getCuentas, createCuenta, updateCuenta, deleteCuenta } from "../../services/CuentasService";
 import { Table, Button } from "react-bootstrap";
-import { FaEdit, FaTrash } from "react-icons/fa"; // Importa los iconos
+import { FaEdit, FaTrash } from "react-icons/fa";
 import CuentaModal from "../Modals/CuentaModal/CuentaModal";
-import "./CuentasTable.css"; // Asegúrate de crear e importar este archivo de estilos
+import ErrorModal from "../ErrorModal/ErrorModal";
+import "./CuentasTable.css";
 
 const CuentasTable = () => {
   const [cuentas, setCuentas] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [cuentaEditar, setCuentaEditar] = useState(null);
 
   useEffect(() => {
@@ -21,10 +24,11 @@ const CuentasTable = () => {
     };
 
     fetchCuentas();
-  }, []); // Empty dependency array means this effect runs only once after initial render
+  }, []);
 
   const handleAddCuenta = async (nuevaCuenta) => {
     try {
+      nuevaCuenta.estado = 1; // Asegurando que el estado por defecto es 1 al agregar
       const cuentaNueva = await createCuenta(nuevaCuenta);
       setCuentas([...cuentas, cuentaNueva]);
     } catch (error) {
@@ -55,13 +59,27 @@ const CuentasTable = () => {
       const cuentasActualizadas = cuentas.filter((cuenta) => cuenta.id !== id);
       setCuentas(cuentasActualizadas);
     } catch (error) {
-      console.error("Error deleting cuenta:", error);
+      if (error.response && error.response.status === 400) {
+        setErrorMessage("No se puede eliminar la cuenta porque tiene asientos asignados a esta.");
+        setShowErrorModal(true);
+      } else {
+        console.error("Error deleting cuenta:", error);
+      }
     }
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setCuentaEditar(null);
+  };
+
+  const handleCloseErrorModal = () => {
+    setShowErrorModal(false);
+    setErrorMessage("");
+  };
+
+  const formatEstado = (estado) => {
+    return estado === 1 ? "Activo" : "Inactivo";
   };
 
   return (
@@ -76,6 +94,7 @@ const CuentasTable = () => {
               <th>Código</th>
               <th>Nombre</th>
               <th>Tipo</th>
+              <th>Estado</th>
               <th className="options-column">Opciones</th>
             </tr>
           </thead>
@@ -85,6 +104,7 @@ const CuentasTable = () => {
                 <td>{cuenta.codigo_cuenta}</td>
                 <td>{cuenta.nombre_cuenta}</td>
                 <td>{cuenta.tipo_cuenta}</td>
+                <td>{formatEstado(cuenta.estado)}</td>
                 <td className="options-column">
                   <Button
                     variant="warning"
@@ -110,6 +130,11 @@ const CuentasTable = () => {
         handleClose={handleCloseModal}
         handleGuardarCuenta={cuentaEditar ? handleUpdateCuenta : handleAddCuenta}
         cuenta={cuentaEditar}
+      />
+      <ErrorModal
+        show={showErrorModal}
+        handleClose={handleCloseErrorModal}
+        message={errorMessage}
       />
     </div>
   );

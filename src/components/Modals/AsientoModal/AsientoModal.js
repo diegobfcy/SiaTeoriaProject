@@ -31,7 +31,8 @@ const AsientoModal = ({ show, handleClose, handleGuardarAsiento }) => {
     const fetchCuentas = async () => {
       try {
         const data = await getCuentas();
-        setCuentas(data);
+        const cuentasActivas = data.filter(cuenta => cuenta.estado === 1);
+        setCuentas(cuentasActivas);
       } catch (error) {
         console.error("Error fetching cuentas:", error);
       }
@@ -40,7 +41,8 @@ const AsientoModal = ({ show, handleClose, handleGuardarAsiento }) => {
     const fetchSubdiarios = async () => {
       try {
         const data = await getSubdiarios();
-        setSubdiarios(data);
+        const subdiariosActivos = data.filter(subdiario => subdiario.estado === 1);
+        setSubdiarios(subdiariosActivos);
       } catch (error) {
         console.error("Error fetching subdiarios:", error);
       }
@@ -96,13 +98,14 @@ const AsientoModal = ({ show, handleClose, handleGuardarAsiento }) => {
       id_usuario: user.id,
       descripcion,
       fecha,
-      id_subdiario: subdiario,
+      id_subdiario: subdiario || null,
       detalles: detalles.map((detalle) => ({
         ...detalle,
         debe: detalle.debe === "" ? "0" : detalle.debe,
         haber: detalle.haber === "" ? "0" : detalle.haber,
       })),
     };
+    console.log(nuevoAsiento);
     handleGuardarAsiento(nuevoAsiento);
     handleClose();
   };

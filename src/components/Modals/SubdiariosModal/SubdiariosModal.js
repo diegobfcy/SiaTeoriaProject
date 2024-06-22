@@ -6,28 +6,32 @@ const SubdiariosModal = ({ show, handleClose, handleGuardarSubdiario, subdiario 
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const { user } = useContext(UserContext);
-  
+  const [estado, setEstado] = useState(1); // Estado por defecto es 1
+
   useEffect(() => {
     if (subdiario) {
       setNombre(subdiario.nombre);
       setDescripcion(subdiario.descripcion);
+      setEstado(subdiario.estado); // Establecer el estado actual del subdiario en el estado local
     } else {
       setNombre('');
       setDescripcion('');
+      setEstado(1); // Por defecto, nuevo subdiario comienza activo
     }
   }, [subdiario]);
 
   const handleGuardar = () => {
-
     const fechaHoraActual = new Date().toISOString().slice(0, 19).replace('T', ' '); // Obtener fecha y hora actual en formato ISO 8601
     const nuevoSubdiario = {
       nombre,
       fecha_creacion: fechaHoraActual,
       descripcion,
-      id_usuario: user.id
+      id_usuario: user.id,
+      estado
     };
     if (subdiario) {
-      handleGuardarSubdiario(subdiario.id, nuevoSubdiario);
+      console.log(subdiario);
+      handleGuardarSubdiario(nuevoSubdiario);
     } else {
       handleGuardarSubdiario(nuevoSubdiario);
     }
@@ -58,6 +62,19 @@ const SubdiariosModal = ({ show, handleClose, handleGuardarSubdiario, subdiario 
               onChange={(e) => setDescripcion(e.target.value)}
             />
           </Form.Group>
+          {subdiario && ( // Solo muestra el campo de selección de estado si es un subdiario existente (es decir, al editarlo)
+            <Form.Group controlId="estado">
+              <Form.Label>Estado</Form.Label>
+              <Form.Control
+                as="select"
+                value={estado}
+                onChange={(e) => setEstado(parseInt(e.target.value))}
+              >
+                <option value={1}>Activo</option>
+                <option value={0}>Inactivo</option>
+              </Form.Control>
+            </Form.Group>
+          )}
         </Form>
       </Modal.Body>
       <Modal.Footer>

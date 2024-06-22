@@ -1,79 +1,90 @@
 import React, { useState, useEffect } from "react";
-import { getSubdiarios, createSubdiario, updateSubdiario, deleteSubdiario } from "../../services/SubdiariosService"; // Importa las funciones CRUD del servicio
+import { getSubdiarios, createSubdiario, updateSubdiario, deleteSubdiario } from "../../services/SubdiariosService";
 import { Table, Button } from "react-bootstrap";
-import { FaEdit, FaTrash } from "react-icons/fa"; // Importa los iconos
+import { FaEdit, FaTrash } from "react-icons/fa";
 import SubdiariosModal from "../Modals/SubdiariosModal/SubdiariosModal";
-import "./SubdiariosTable.css"; // Asegúrate de crear e importar este archivo de estilos
+import ErrorModal from "../ErrorModal/ErrorModal"; // Importa el nuevo modal
+import "./SubdiariosTable.css";
 
 const SubdiariosTable = () => {
   const [subdiarios, setSubdiarios] = useState([]);
-  const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
-  const [subdiarioEditar, setSubdiarioEditar] = useState(null); // Estado para almacenar el subdiario que se está editando
+  const [showModal, setShowModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);  // Estado para el modal de error
+  const [errorMessage, setErrorMessage] = useState("");  // Estado para el mensaje de error
+  const [subdiarioEditar, setSubdiarioEditar] = useState(null);
 
   useEffect(() => {
     const fetchSubdiariosData = async () => {
       try {
-        const data = await getSubdiarios(); // Obtiene los subdiarios desde el servicio
-        setSubdiarios(data); // Actualiza el estado con los subdiarios obtenidos
+        const data = await getSubdiarios();
+        setSubdiarios(data);
       } catch (error) {
         console.error("Error fetching subdiarios:", error);
       }
     };
 
-    fetchSubdiariosData(); // Llama a la función para obtener los subdiarios al cargar el componente
-  }, []); // Ejecuta el efecto solo una vez al renderizar inicialmente
+    fetchSubdiariosData();
+  }, []);
 
   const handleAgregarSubdiario = () => {
-    // Función para manejar la apertura del modal para agregar subdiario
-    setShowModal(true); // Abre el modal de subdiarios
-    setSubdiarioEditar(null); // Reinicia el estado de edición (no se está editando, sino creando uno nuevo)
+    setShowModal(true);
+    setSubdiarioEditar(null);
   };
 
   const handleEditarSubdiario = (id) => {
-    // Función para manejar la edición de un subdiario
-    const subdiario = subdiarios.find((s) => s.id === id); // Encuentra el subdiario por su ID
+    const subdiario = subdiarios.find((s) => s.id === id);
     if (subdiario) {
-      setSubdiarioEditar(subdiario); // Establece el subdiario a editar en el estado
-      setShowModal(true); // Abre el modal de subdiarios
+      setSubdiarioEditar(subdiario);
+      setShowModal(true);
     }
   };
 
   const handleGuardarSubdiario = async (subdiario) => {
-    // Función para manejar el guardado de un subdiario (tanto creación como actualización)
     try {
       if (subdiarioEditar) {
-        // Si existe subdiarioEditar, significa que estamos actualizando
-        await updateSubdiario(subdiarioEditar.id, subdiario); // Llama a la función de actualización del servicio
+        await updateSubdiario(subdiarioEditar.id, subdiario);
         const subdiariosActualizados = subdiarios.map((s) =>
           s.id === subdiarioEditar.id ? { ...s, ...subdiario } : s
         );
-        setSubdiarios(subdiariosActualizados); // Actualiza el estado con los subdiarios actualizados
+        setSubdiarios(subdiariosActualizados);
       } else {
-        // Si no existe subdiarioEditar, significa que estamos creando uno nuevo
-        const subdiarioNuevo = await createSubdiario(subdiario); // Llama a la función de creación del servicio
-        setSubdiarios([...subdiarios, subdiarioNuevo]); // Agrega el nuevo subdiario al estado
+        subdiario.estado = 1; // Asegurando que el estado por defecto es 1 al agregar
+        const subdiarioNuevo = await createSubdiario(subdiario);
+        setSubdiarios([...subdiarios, subdiarioNuevo]);
       }
-      setShowModal(false); // Cierra el modal después de guardar
+      setShowModal(false);
     } catch (error) {
       console.error("Error saving subdiario:", error);
     }
   };
 
   const handleEliminarSubdiario = async (id) => {
-    // Función para manejar la eliminación de un subdiario
     try {
-      await deleteSubdiario(id); // Llama a la función de eliminación del servicio
-      const subdiariosFiltrados = subdiarios.filter((s) => s.id !== id); // Filtra los subdiarios excluyendo el eliminado
-      setSubdiarios(subdiariosFiltrados); // Actualiza el estado con los subdiarios filtrados
+      await deleteSubdiario(id);
+      const subdiariosFiltrados = subdiarios.filter((s) => s.id !== id);
+      setSubdiarios(subdiariosFiltrados);
     } catch (error) {
-      console.error("Error deleting subdiario:", error);
+      if (error.response && error.response.status === 400) {
+        setErrorMessage("No se puede eliminar el subdiario porque tiene asientos asignados a este");
+        setShowErrorModal(true);
+      } else {
+        console.error("Error deleting subdiario:", error);
+      }
     }
   };
 
   const handleCloseModal = () => {
-    // Función para manejar el cierre del modal
-    setShowModal(false); // Cierra el modal
-    setSubdiarioEditar(null); // Reinicia el estado de edición
+    setShowModal(false);
+    setSubdiarioEditar(null);
+  };
+
+  const handleCloseErrorModal = () => {
+    setShowErrorModal(false);
+    setErrorMessage("");
+  };
+
+  const formatEstado = (estado) => {
+    return estado === 1 ? "Activo" : "Inactivo";
   };
 
   return (
@@ -88,6 +99,7 @@ const SubdiariosTable = () => {
               <th>Nombre</th>
               <th>Fecha Creación</th>
               <th>Descripción</th>
+              <th>Estado</th>
               <th>Opciones</th>
             </tr>
           </thead>
@@ -97,6 +109,7 @@ const SubdiariosTable = () => {
                 <td>{subdiario.nombre}</td>
                 <td>{new Date(subdiario.fecha_creacion).toLocaleDateString()}</td>
                 <td>{subdiario.descripcion}</td>
+                <td>{formatEstado(subdiario.estado)}</td>
                 <td className="options-column">
                   <Button
                     variant="warning"
@@ -122,6 +135,11 @@ const SubdiariosTable = () => {
         handleClose={handleCloseModal}
         handleGuardarSubdiario={handleGuardarSubdiario}
         subdiario={subdiarioEditar}
+      />
+      <ErrorModal
+        show={showErrorModal}
+        handleClose={handleCloseErrorModal}
+        message={errorMessage}
       />
     </div>
   );
