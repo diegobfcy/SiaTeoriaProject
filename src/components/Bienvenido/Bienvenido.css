@@ -1,0 +1,25 @@
+.fade-enter {
+    opacity: 0;
+  }
+  .fade-enter-active {
+    opacity: 1;
+    transition: opacity 500ms;
+  }
+  .fade-exit {
+    opacity: 1;
+  }
+  .fade-exit-active {
+    opacity: 0;
+    transition: opacity 500ms;
+  }
+  
+  .bienvenido-container {
+    text-align: center;
+    margin-top: 50px;
+  }
+  .bienvenido-text{
+    font-size: 80px;
+    font-family:monospace;
+    font-weight: bold;
+  }
+  
