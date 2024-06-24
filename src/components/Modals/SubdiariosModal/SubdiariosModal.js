@@ -29,14 +29,21 @@ const SubdiariosModal = ({ show, handleClose, handleGuardarSubdiario, subdiario 
       id_usuario: user.id,
       estado
     };
+    const resetFields = () => {
+      setNombre('');
+      setDescripcion('');
+      setEstado(1); // Por defecto, nuevo subdiario comienza activo
+    };
     if (subdiario) {
       console.log(subdiario);
       handleGuardarSubdiario(nuevoSubdiario);
     } else {
       handleGuardarSubdiario(nuevoSubdiario);
     }
+    resetFields();
     handleClose(); // Cierra el modal después de guardar
   };
+  
 
   return (
     <Modal show={show} onHide={handleClose}>
