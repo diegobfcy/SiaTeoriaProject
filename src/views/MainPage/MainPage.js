@@ -18,22 +18,27 @@ const MainPage = () => {
     <div className="main-page">
       <header className="main-header">
         <div className="logo-section">
-          
           <span className="app-name">Asiento Contable</span>
         </div>
         <nav className="main-menu">
-          <button
-            className="menu-button"
-            onClick={() => handleMenuClick("libroDiario")}
-          >
-            Libro Diario
-          </button>
-          <button
-            className="menu-button"
-            onClick={() => handleMenuClick("cuentas")}
-          >
-            Cuentas
-          </button>
+          {user.tipo !== "admin" && (
+            <button
+              className="menu-button"
+              onClick={() => handleMenuClick("libroDiario")}
+            >
+              Libro Diario
+            </button>
+          )}
+
+          {user.tipo !== "admin" && (
+            <button
+              className="menu-button"
+              onClick={() => handleMenuClick("cuentas")}
+            >
+              Cuentas
+            </button>
+          )}
+
           {user.tipo !== "admin" && (
             <button
               className="menu-button"
